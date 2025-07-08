@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sunrun Solar + Battery PPA Savings Calculator</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4ECDC4;
+            --secondary-color: #FF6B6B;
+            --text-color: #2D3436;
+            --border-color: #E4E9F2;
+            --background-color: #F7FAFC;
+            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+            padding: 20px;
+            background: linear-gradient(to right, rgba(78, 205, 196, 0.1), rgba(78, 205, 196, 0.05));
+            border-radius: 12px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-color);
+            margin-bottom: 16px;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #64748B;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .content-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 60px;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .inputs-container {
+            flex: 0 0 45%;
+            background: #FFFFFF;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            z-index: 1;
+        }
+
+        .input-group {
+            margin-bottom: 24px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+
+        label {
+            font-weight: 500;
+            color: var(--text-color);
+            font-size: 0.95rem;
+        }
+
+        input {
+            padding: 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            width: 100%;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            color: var(--text-color);
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.1);
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            width: 100%;
+            transition: all 0.3s ease;
+            margin-top: 8px;
+        }
+
+        button:hover {
+            background-color: #45b7af;
+            transform: translateY(-1px);
+        }
+
+        .logo-container {
+            flex: 0 0 45%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .logo-wrapper {
+            height: 300px;
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .logo-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 12px;
+            transition: transform 0.3s ease;
+        }
+
+        .logo-wrapper:hover img {
+            transform: scale(1.02);
+        }
+
+        .logo-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0) 100%);
+            border-radius: 12px;
+            pointer-events: none;
+        }
+
+        .customer-info {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .customer-info-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid rgba(78, 205, 196, 0.2);
+        }
+
+        .customer-form-group {
+            margin-bottom: 16px;
+        }
+
+        .customer-form-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: var(--text-color);
+            font-size: 0.9rem;
+        }
+
+        .customer-form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .customer-form-group input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.1);
+        }
+
+        .charts-section {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            height: 400px;
+            transition: transform 0.3s ease;
+        }
+
+        .chart-container:hover {
+            transform: translateY(-2px);
+        }
+
+        .chart-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 20px;
+            text-align: center;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(78, 205, 196, 0.2);
+        }
+
+        @media (max-width: 1024px) {
+            .content-wrapper {
+                gap: 30px;
+            }
+            
+            .inputs-container, .logo-container {
+                flex: 0 0 47%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .content-wrapper {
+                flex-direction: column;
+            }
+            
+            .inputs-container, .logo-container {
+                flex: 0 0 100%;
+            }
+
+            .logo-container {
+                height: 250px;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Sunrun Solar + Battery PPA Savings Calculator</h1>
+            <p class="subtitle">Calculate your potential savings over 25 years with Sunrun's Solar + Battery PPA program compared to traditional utility costs.</p>
+        </div>
+        
+        <div class="content-wrapper">
+            <div class="inputs-container">
+                <div class="input-group">
+                    <label for="monthlyUsage">Average Monthly kWh Usage:</label>
+                    <input type="number" id="monthlyUsage" value="1000">
+                </div>
+                
+                <div class="input-group">
+                    <label for="utilityRate">Utility Rate ($/kWh):</label>
+                    <input type="number" id="utilityRate" value="0.14" step="0.01">
+                </div>
+                
+                <div class="input-group">
+                    <label for="ppaPayment">Monthly PPA Payment ($):</label>
+                    <input type="number" id="ppaPayment" value="100">
+                </div>
+                
+                <div class="input-group">
+                    <label for="utilityEscalator">Utility Escalator (%):</label>
+                    <input type="number" id="utilityEscalator" value="8">
+                </div>
+                
+                <div class="input-group">
+                    <label for="ppaEscalator">PPA Escalator (%):</label>
+                    <input type="number" id="ppaEscalator" value="3">
+                </div>
+                
+                <div class="input-group">
+                    <label for="solarOffset">Solar + Battery Offset (%):</label>
+                    <input type="number" id="solarOffset" value="100">
+                </div>
+                
+                <div class="input-group">
+                    <label for="years">Years:</label>
+                    <input type="number" id="years" value="25">
+                </div>
+
+                <button onclick="updateCharts()">Calculate Savings</button>
+            </div>
+            
+            <div class="logo-container">
+                <div class="logo-wrapper">
+                    <img src="https://d1io3yog0oux5.cloudfront.net/_24181388b156586f72776a290ca28079/sunrun/db/411/2802/social_image_resized.jpg" alt="Sunrun Logo">
+                    <div class="logo-overlay"></div>
+                </div>
+                <div class="customer-info">
+                    <div class="customer-info-title">Customer Information</div>
+                    <div class="customer-form-group">
+                        <label for="customerName">Full Name:</label>
+                        <input type="text" id="customerName" placeholder="Enter your full name">
+                    </div>
+                    <div class="customer-form-group">
+                        <label for="customerAddress">Street Address:</label>
+                        <input type="text" id="customerAddress" placeholder="Enter your street address">
+                    </div>
+                    <div class="customer-form-group">
+                        <label for="customerCity">City:</label>
+                        <input type="text" id="customerCity" placeholder="Enter your city">
+                    </div>
+                    <div class="customer-form-group">
+                        <label for="customerState">State:</label>
+                        <input type="text" id="customerState" placeholder="Enter your state">
+                    </div>
+                    <div class="customer-form-group">
+                        <label for="customerZip">ZIP Code:</label>
+                        <input type="text" id="customerZip" placeholder="Enter your ZIP code">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="charts-section">
+            <div class="chart-container">
+                <div class="chart-title">Total Cumulative Savings Over Time</div>
+                <canvas id="savingsChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">Monthly Payment Comparison</div>
+                <canvas id="paymentsChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let savingsChart = null;
+        let paymentsChart = null;
+
+        function calculateData() {
+            const monthlyUsage = parseFloat(document.getElementById('monthlyUsage').value);
+            const utilityRate = parseFloat(document.getElementById('utilityRate').value);
+            const ppaPayment = parseFloat(document.getElementById('ppaPayment').value);
+            const utilityEscalator = parseFloat(document.getElementById('utilityEscalator').value) / 100;
+            const ppaEscalator = parseFloat(document.getElementById('ppaEscalator').value) / 100;
+            const solarOffset = parseFloat(document.getElementById('solarOffset').value) / 100;
+            const years = parseInt(document.getElementById('years').value);
+
+            const labels = Array.from({length: years + 1}, (_, i) => `Year ${i}`);
+            const cumulativeSavings = [0];
+            const monthlyUtilityPayments = [];
+            const monthlyPPAPayments = [];
+            
+            let annualUtilityCost = monthlyUsage * utilityRate * 12;
+            let annualPPACost = ppaPayment * 12;
+            let totalSavings = 0;
+
+            for (let year = 0; year <= years; year++) {
+                // Calculate costs with escalators
+                const utilityPayment = annualUtilityCost * Math.pow(1 + utilityEscalator, year);
+                const ppaYearlyPayment = annualPPACost * Math.pow(1 + ppaEscalator, year);
+                
+                // Calculate monthly payments
+                monthlyUtilityPayments.push(utilityPayment / 12);
+                monthlyPPAPayments.push(ppaYearlyPayment / 12);
+
+                if (year > 0) {
+                    // Calculate savings considering solar offset
+                    const actualUtilityCost = utilityPayment * (1 - solarOffset);
+                    const yearSavings = utilityPayment - (actualUtilityCost + ppaYearlyPayment);
+                    totalSavings += yearSavings;
+                    cumulativeSavings.push(totalSavings);
+                }
+            }
+
+            return {
+                labels: labels,
+                savings: cumulativeSavings,
+                utilityPayments: monthlyUtilityPayments,
+                ppaPayments: monthlyPPAPayments
+            };
+        }
+
+        function updateCharts() {
+            const data = calculateData();
+            
+            // Update Savings Chart
+            if (savingsChart) {
+                savingsChart.destroy();
+            }
+
+            const savingsCtx = document.getElementById('savingsChart').getContext('2d');
+            savingsChart = new Chart(savingsCtx, {
+                type: 'line',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'Cumulative Savings ($)',
+                        data: data.savings,
+                        borderColor: '#4ECDC4',
+                        backgroundColor: 'rgba(78, 205, 196, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Cumulative Savings Over Time'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Savings: $${context.parsed.y.toFixed(2)}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Update Payments Chart
+            if (paymentsChart) {
+                paymentsChart.destroy();
+            }
+
+            const paymentsCtx = document.getElementById('paymentsChart').getContext('2d');
+            paymentsChart = new Chart(paymentsCtx, {
+                type: 'line',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'Monthly Utility Payment',
+                        data: data.utilityPayments,
+                        borderColor: '#FF6B6B',
+                        backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                        fill: false,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Monthly PPA Payment',
+                        data: data.ppaPayments,
+                        borderColor: '#4ECDC4',
+                        backgroundColor: 'rgba(78, 205, 196, 0.1)',
+                        fill: false,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Monthly Payments Comparison'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: $${context.parsed.y.toFixed(2)}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initial chart render
+        document.addEventListener('DOMContentLoaded', updateCharts);
+    </script>
+</body>
+</html>
